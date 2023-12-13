@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "988495546387",
+    "project_id": "tea-time-118d6",
+    "storage_bucket": "tea-time-118d6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988495546387:android:efc0f25e516905ce3b97e6",
+        "android_client_info": {
+          "package_name": "com.example.teatime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB813VS1YtXcmtewDBthVrmmZm-2GGsptc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
