@@ -65,7 +65,7 @@ class ModifyTeaPage extends StatelessWidget {
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 title: Text('Confirmation'),
-                                content: Text('Voulez-vous vraiment supprimer ce thé ?'),
+                                content: Text('Voulez-vous vraiment supprimer ce thé ?'),   //Changer la police
                                 actions: [
                                   TextButton(
                                     onPressed: () {

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 //EVENT
 abstract class ModifyTeaEvent {}
 
-class ModifyTea extends ModifyTeaEvent {    //Ici ou dans le bloc TeaBloc ?
+class ModifyTea extends ModifyTeaEvent {
 
 }
 
