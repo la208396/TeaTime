@@ -9,7 +9,7 @@ class AddCategoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return BlocBuilder<AddCategoryBloc, AddCategoryState>(
+    return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, state)
     {
 

@@ -3,18 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 //EVENT
 abstract class CategoryEvent {}
 
-class AddCategory extends CategoryEvent {}   //A quoi sert t-il ?
+class AddCategory extends CategoryEvent {}
 
 //STATE
-class AddCategoryState {
+class CategoryState {
   final bool isEmpty;
   final String name;
-  AddCategoryState(this.isEmpty, {this.name = ''});
+  CategoryState(this.isEmpty, {this.name = ''});
 }
 
 //BLOC
-class AddCategoryBloc extends Bloc<CategoryEvent, AddCategoryState> {
-  AddCategoryBloc() : super(AddCategoryState(false)) {
-    on<AddCategory>((event, emit) => emit(AddCategoryState(state.isEmpty == true)));  //Name ?
+class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
+  CategoryBloc() : super(CategoryState(false)) {
+    on<AddCategory>((event, emit) => emit(CategoryState(state.isEmpty == true)));  //Name ?
   }
 }

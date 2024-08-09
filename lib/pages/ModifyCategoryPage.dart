@@ -6,6 +6,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:teatime/pages/main.dart';
+import 'package:teatime/blocs/TeaBloc.dart';
+
 
 import '../blocs/ModifyCategoryBloc.dart';
 
@@ -13,7 +15,7 @@ class ModifyCategoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return BlocBuilder<ModifyCategoryBloc, ModifyCategoryState>(
+    return BlocBuilder<TeaBloc, TeaState>(
       builder: (context, state) {
 
         return Scaffold(

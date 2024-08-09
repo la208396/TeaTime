@@ -6,7 +6,7 @@ class AddTeaPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return BlocBuilder<AddTeaBloc, AddTeaState>(
+    return BlocBuilder<TeaBloc, TeaState>(
       builder: (context, state) {
 
         return Scaffold(
