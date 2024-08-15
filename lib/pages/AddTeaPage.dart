@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../blocs/TeaBloc.dart';
+import '../models/Category_model.dart';
+
 
 class AddTeaPage extends StatelessWidget {
+
+  final TextEditingController _teaControllerName = TextEditingController();
+  final TextEditingController _teaControllerDescription = TextEditingController();
+  final TextEditingController _teaControllerpersonalOpinion = TextEditingController();
+  final TextEditingController _teaControllerQuoting = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
 
+    final Category category = ModalRoute.of(context)!.settings.arguments as Category;
+    int teaQuoting = 0;
+
     return BlocBuilder<TeaBloc, TeaState>(
       builder: (context, state) {
+
+      if (state is TeaLoaded) {
 
         return Scaffold(
 
@@ -31,7 +45,7 @@ class AddTeaPage extends StatelessWidget {
             ),
           ),
 
-          body: const SingleChildScrollView(
+          body: SingleChildScrollView(
 
             child :Column(
 
@@ -40,7 +54,7 @@ class AddTeaPage extends StatelessWidget {
 
               children: <Widget>[
 
-                 Padding(
+                 const Padding(
                   padding: EdgeInsets.all(20.0),
                   child: Text(
                     'Ajouter un thé',
@@ -51,50 +65,77 @@ class AddTeaPage extends StatelessWidget {
                   ),
                 ),
 
-                 Padding(
+                Padding(
                   padding: EdgeInsets.only(top : 40, left: 20.0, right: 20.0),
 
+                  child: Text(
+                    'Catégorie sélectionnée : ${category.name}',
+                    style: const TextStyle(
+                      color: Colors.brown,
+                      fontSize: 15.0,
+                    ),
+                  ),
+                ),
+
+                 Padding(
+                  padding: const EdgeInsets.only(top : 40, left: 20.0, right: 20.0),
+                   child: TextField(
+                     controller: _teaControllerName,
+                     decoration: const InputDecoration(
+                       border: OutlineInputBorder(),
+                       labelText: 'Nom du thé : ',
+                     ),
+                     style: const TextStyle(
+                       color: Colors.brown,
+                       fontSize: 15.0,
+                     ),
+                   ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(top : 40, left: 20.0, right: 20.0),
                   child: TextField(
-                    decoration: InputDecoration(
+                    controller: _teaControllerDescription,
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Nom du thé : ',
+                      labelText: 'Description : ',
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.brown,
                       fontSize: 15.0,
                     ),
                   ),
                 ),
 
-                 Padding(
-                  padding: EdgeInsets.only(top : 40, left: 20.0, right: 20.0),
-
-                  child: TextField(               //List avec toutes les catégories existantes
-                    decoration: InputDecoration(
+                Padding(
+                  padding: const EdgeInsets.only(top : 40, left: 20.0, right: 20.0),
+                  child: TextField(
+                    controller: _teaControllerpersonalOpinion,
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Catégorie : ',
+                      labelText: 'Avis : ',
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.brown,
                       fontSize: 15.0,
                     ),
                   ),
                 ),
 
-                 Padding(
-                  padding: EdgeInsets.only(top: 40.0, left: 20.0, right: 20.0),
-                  child: SizedBox(
-                    height: 200,
-                    child: TextField(
-                      expands: true,
-                      maxLines: null,
-                      textAlignVertical: TextAlignVertical.top,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-                        border: OutlineInputBorder(),
-                        labelText: 'Description : ',
-                      ),
+                Padding(
+                  padding: const EdgeInsets.only(top : 40, left: 20.0, right: 20.0),
+                  child: RatingBar.builder(
+                    initialRating: 0,
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    itemCount: 5,
+                    itemBuilder: (context, index) => const Icon(
+                      Icons.ac_unit,
+                      color: Colors.amber,
                     ),
+                    onRatingUpdate: (rating) {
+                      teaQuoting = rating.toInt();
+                    },
                   ),
                 ),
 
@@ -105,12 +146,22 @@ class AddTeaPage extends StatelessWidget {
 
           floatingActionButton: FloatingActionButton(         // Widget prédéfini dans Scafold et se met automatiquement en bas à droite
             onPressed: () {
-              Navigator.pop(context);
+              final teaName = _teaControllerName.text.trim();
+              final teaDescription = _teaControllerDescription.text.trim();
+              final teaPersonalOpinion = _teaControllerpersonalOpinion.text.trim();
+
+              if (teaName.isNotEmpty && teaDescription.isNotEmpty) {
+                context.read<TeaBloc>().add(AddTea(teaName, teaDescription, teaPersonalOpinion, teaQuoting, category));
+                Navigator.pop(context);
+              }
             },
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
           ),
 
         );
+      } else {
+        return const CircularProgressIndicator(color: Colors.brown);
+        }
       },
     );
   }

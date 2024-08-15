@@ -1,9 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-//EVENT
-abstract class CategoryEvent {}
-
-class AddCategory extends CategoryEvent {}
 
 //STATE
 class CategoryState {
@@ -11,6 +7,13 @@ class CategoryState {
   final String name;
   CategoryState(this.isEmpty, {this.name = ''});
 }
+
+
+//EVENT
+abstract class CategoryEvent {}
+
+class AddCategory extends CategoryEvent {}
+
 
 //BLOC
 class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {

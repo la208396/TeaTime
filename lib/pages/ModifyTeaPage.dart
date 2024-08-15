@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:teatime/blocs/ModifyTeaBloc.dart';
 import 'package:teatime/blocs/TeaBloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,18 +8,27 @@ import 'package:path_provider/path_provider.dart';
 import 'package:teatime/pages/main.dart';
 import 'package:teatime/models/Tea_model.dart';
 
+import '../models/Category_model.dart';
+
 class ModifyTeaPage extends StatelessWidget {
+
+
   @override
   Widget build(BuildContext context) {
-    final Tea tea = ModalRoute.of(context)!.settings.arguments as Tea;
+
+    final Map<String, dynamic> args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+    final Tea tea = args['tea'] as Tea;
+    final Category category = args['category'] as Category;
 
     return BlocBuilder<TeaBloc, TeaState>(
         builder: (context, state)
         {
           if (state is TeaLoaded) {
+
             final currentTea = state.categories
-                .expand((category) => category.teas)
-                .firstWhere((t) => t.name == tea.name);
+                .expand((category) => category.teas)      //Créer une liste de thé à partir de la liste de catégories
+                .firstWhere((t) => t.name == tea.name);   //Recherche et retourne le premier objet Tea dont le nom correspond à celui du thé passé en argument.
 
 
             return Scaffold(
@@ -60,19 +68,27 @@ class ModifyTeaPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(
                           left: 20.0, right: 20.0, top: 20.0),
+
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                         children: [
-                          Text(
-                            currentTea.name,
-                            style: const TextStyle(
-                              color: Colors.brown,
-                              fontSize: 24.0,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              Text(
+                                tea.name,
+                                style: const TextStyle(
+                                  fontSize: 16.0,
+                                  color: Colors.brown,
+                                ),
+                              ),
+                            ],
                           ),
+
                           ElevatedButton(
                             onPressed: () {
-                              // Afficher la boîte de dialogue de confirmation
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -83,16 +99,14 @@ class ModifyTeaPage extends StatelessWidget {
                                     actions: [
                                       TextButton(
                                         onPressed: () {
-                                          // Annuler la suppression
                                           Navigator.of(context).pop();
                                         },
                                         child: Text('Annuler'),
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          // Supprimer le thé
-                                          Navigator.of(context)
-                                              .pop(); //Remplacer par des routes
+                                          context.read<TeaBloc>().add(DeleteTea(tea.name, category));
+                                          Navigator.of(context).pop();
                                           Navigator.of(context).pop();
                                         },
                                         child: const Text('Supprimer'),
@@ -120,7 +134,6 @@ class ModifyTeaPage extends StatelessWidget {
                           color: Colors.amber,
                         ),
                         onRatingUpdate: (rating) {
-                          // Mettre à jour la valeur de 'quoting' dans l'objet currentTea
                           currentTea.quoting = rating.toInt();
                           print("Updated rating: ${currentTea.quoting}");
                         },
@@ -152,6 +165,9 @@ class ModifyTeaPage extends StatelessWidget {
                                     vertical: 20.0, horizontal: 20.0),
                                 border: OutlineInputBorder(),
                               ),
+                              onChanged: (value) {
+                                currentTea.description = value;
+                              },
                             ),
                           ),
                         ],
@@ -183,6 +199,9 @@ class ModifyTeaPage extends StatelessWidget {
                                     vertical: 20.0, horizontal: 20.0),
                                 border: OutlineInputBorder(),
                               ),
+                              onChanged: (value) {
+                                currentTea.personalOpinion = value;
+                              },
                             ),
                           ),
                         ],
@@ -221,6 +240,7 @@ class ModifyTeaPage extends StatelessWidget {
 
               floatingActionButton: ElevatedButton(
                 onPressed: () {
+                  context.read<TeaBloc>().add(UpdateTea(currentTea, category));
                   Navigator.pop(context);
                 },
                 child: const Text(

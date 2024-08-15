@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:teatime/blocs/CategoryBloc.dart';
 import 'package:teatime/blocs/ModifyTeaBloc.dart';
+import 'package:teatime/models/Firestore_service.dart';
 import 'package:teatime/models/Tea_model.dart';
 import 'package:teatime/pages/AddCategoryPage.dart';
 import 'package:teatime/pages/AddTeaPage.dart';
@@ -36,9 +37,10 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(       //Que pour la main page ??
 
       providers: [
-          BlocProvider<TeaBloc>(create: (BuildContext context) => TeaBloc(),),
-          BlocProvider<CategoryBloc>(create: (BuildContext context) => CategoryBloc(),),
-        ],
+        BlocProvider<TeaBloc>(
+          create: (context) => TeaBloc(FirestoreService()),
+        ),
+      ],
 
       child: MaterialApp(       //Pour toute les pages ??
         title: 'Tea Time',
@@ -63,7 +65,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -71,19 +73,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  late FirebaseFirestore _db;
-
   @override
   void initState() {
+    BlocProvider.of<TeaBloc>(context).add(LoadCategoriesAndTeas());
     super.initState();
-    _db = FirebaseFirestore.instance;
   }
 
   @override
   Widget build(BuildContext context) {
-
-    var categories = _db.collection('categories').snapshots();
-    var teas = _db.collection('teas').snapshots();
 
     return Scaffold(
 
@@ -112,22 +109,81 @@ class _MyHomePageState extends State<MyHomePage> {
           builder: (context, state) {
 
             if(state is TeaInitial){
-              context.read<TeaBloc>().add(LoadTea());
+              context.read<TeaBloc>().add(LoadCategoriesAndTeas());
               return const CircularProgressIndicator(color: Colors.brown);
             }
 
             if(state is TeaLoaded){
+
+              final categories = state.categories;
+
               return ListView.builder(
-                    itemCount: state.categories.length,
+                    itemCount: categories.length,
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.only(bottom:5.0),
-                        child: ExpansionTile(
-                          title: Text(state.categories[index].name),
+                        padding: const EdgeInsets.only(bottom: 5.0),
+                        child: GestureDetector(
+                          onLongPress: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Container(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      ListTile(
+                                        leading: Icon(Icons.add),
+                                        title: Text('Ajouter un thé'),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          Navigator.pushNamed(context, '/addTea', arguments: categories[index]);
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.edit),
+                                        title: Text('Supprimer la catégorie'),
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text('Confirmation'),
+                                                content: const Text('Voulez-vous vraiment supprimer cette catégorie ?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                    child: const Text('Annuler'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      context.read<TeaBloc>().add(DeleteCategory(categories[index]));
+                                                      Navigator.of(context).pop();
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                    child: const Text('Supprimer'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+
+                      child: ExpansionTile(
+                          title: Text(categories[index].name),
                           children: [
                             ListView.builder(
-                              itemCount: state.categories[index].teas.length,
+                              itemCount: categories[index].teas.length,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemBuilder: (context, teaIndex) {
@@ -135,9 +191,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   padding: const EdgeInsets.only(bottom: 5.0),
                                   child: ListTile(
                                     leading: Image.asset('lib/pictures/teas/DefaultTeaPicture.png'),
-                                    title: Text(state.categories[index].teas[teaIndex].name),
+                                    title: Text(categories[index].teas[teaIndex].name),
                                     onTap: () {
-                                      Navigator.pushNamed(context, '/modifyTea', arguments: state.categories[index].teas[teaIndex]);
+                                      Navigator.pushNamed(context, '/modifyTea',   arguments: {
+                                        'tea': categories[index].teas[teaIndex],
+                                        'category': categories[index],
+                                      });
                                     },
                                   ),
                                 );
@@ -145,9 +204,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
                   );
+                },
+              );
 
             }else{
               return const Text('Error');
@@ -158,55 +218,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-/*class CatAndTea extends StatelessWidget {
-  final List<Category> listCategories;
-
-  const CatAndTea({super.key, required this.listCategories});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: listCategories.length,
-        itemBuilder: (context, catIndex) {
-      final category = listCategories[catIndex];
-      return Card(
-        margin: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              title: Text(
-                category.name,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              onTap: () {
-                Navigator.pushNamed(context, '/modifyCategory');
-              },
-            ),
-            const Divider(),
-            ListView.builder(
-              itemCount: category.teas.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, teaIndex) {
-                final tea = category.teas[teaIndex];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 5.0),
-                  child: ListTile(
-                    leading: Image.asset('lib/pictures/teas/DefaultTeaPicture.png'),
-                    title: Text(tea.name),
-                    onTap: () {
-                      Navigator.pushNamed(context, '/modifyTea');
-                    },
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      );
-    }
-    );
-  }
-}*/
